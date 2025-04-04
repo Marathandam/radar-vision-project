@@ -1,41 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, RefreshCw, Download, Radio } from 'lucide-react';
-import Layout from '../components/Layout';
+import { ArrowLeft } from 'lucide-react';
+import Layout from '../components/Layout'; // Ensure this path is correct
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
-const LiveFeed = () => {
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [processingStats, setProcessingStats] = useState({
-    fps: 0,
-    frameCount: 0,
-    processingTime: 0
+interface Position {
+  lat: number;
+  lng: number;
+}
+
+const LocationSelector = ({ onLocationSelected }: { onLocationSelected: (lat: number, lng: number) => void }) => {
+  const [position, setPosition] = useState<[number, number] | null>(null);
+
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      setPosition([lat, lng]);
+      onLocationSelected(lat, lng);
+    },
   });
+
+  return position ? <Marker position={position} /> : null;
+};
+
+const LiveFeed: React.FC = () => {
   const navigate = useNavigate();
+  const [selectedLatLng, setSelectedLatLng] = useState<Position | null>(null);
+  const [sarImageUrl, setSarImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate updating stats when streaming is active
   useEffect(() => {
-    if (!isStreaming) return;
-    
-    const interval = setInterval(() => {
-      setProcessingStats(prevStats => ({
-        fps: 12 + Math.floor(Math.random() * 8), // Random FPS between 12-20
-        frameCount: prevStats.frameCount + 1,
-        processingTime: 40 + Math.floor(Math.random() * 35) // Random time between 40-75ms
-      }));
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [isStreaming]);
+    if (selectedLatLng) {
+      generateSARImage();
+    }
+  }, [selectedLatLng]);
 
-  const toggleStream = () => {
-    setIsStreaming(!isStreaming);
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setSelectedLatLng({ lat, lng });
+    setSarImageUrl(null);
+    setError(null);
+  };
+
+  const generateSARImage = async () => {
+    if (!selectedLatLng) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('http://localhost:5000/get-sar-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: selectedLatLng.lat,
+          longitude: selectedLatLng.lng,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.image_url) {
+        setSarImageUrl(data.image_url);
+      } else {
+        setError("Image URL not returned by server.");
+      }
+    } catch (err) {
+      setError("Something went wrong while generating the SAR image.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1800px] mx-auto text-white px-4">
         <div className="flex items-center mb-8">
-          <button 
+          <button
             onClick={() => navigate('/options')}
             className="flex items-center text-night-300 hover:text-radar-400 transition-colors"
           >
@@ -49,130 +89,72 @@ const LiveFeed = () => {
           Convert real-time SAR data streams into optical representations
         </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="radar-card h-[500px] flex flex-col">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-white">Live Conversion Feed</h3>
-                <div className="flex items-center">
-                  <span className={`w-3 h-3 rounded-full mr-2 ${isStreaming ? 'bg-green-500 animate-pulse' : 'bg-night-500'}`}></span>
-                  <span className="text-sm text-night-300">{isStreaming ? 'Conversion active' : 'Conversion inactive'}</span>
+        <div className="grid grid-cols-1 xl:grid-cols-[3fr_1fr] gap-8">
+          {/* Map Section - Wider */}
+          <div className="radar-card h-[600px] overflow-hidden">
+            <div className="h-full">
+              <h3 className="text-lg font-medium text-white mb-4">Select Location</h3>
+              <MapContainer
+                center={[20, 78]}
+                zoom={4}
+                className="h-[90%] w-full rounded-lg z-0"
+              >
+                <TileLayer
+                  attribution='&copy; OpenStreetMap contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <LocationSelector onLocationSelected={handleLocationSelect} />
+              </MapContainer>
+              {selectedLatLng && (
+                <div className="mt-2 text-center">
+                  <p className="text-sm">📍 Selected: {selectedLatLng.lat.toFixed(5)}, {selectedLatLng.lng.toFixed(5)}</p>
                 </div>
-              </div>
-              
-              <div className="flex-grow bg-night-800/70 rounded-lg overflow-hidden relative">
-                {/* Simulated feed visualization */}
-                <div className="absolute inset-0 bg-radar-pattern opacity-30"></div>
-                {isStreaming && (
-                  <>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-64 h-64 border border-radar-700/30 rounded-full animate-pulse-slow"></div>
-                      <div className="absolute w-48 h-48 border border-radar-600/40 rounded-full"></div>
-                      <div className="absolute w-32 h-32 border border-radar-500/50 rounded-full"></div>
-                      <div className="absolute w-1 h-32 bg-gradient-to-t from-radar-500 to-transparent origin-bottom animate-radar-scan"></div>
-                    </div>
-                    <div className="absolute bottom-4 left-4 text-xs text-night-400">
-                      Converting frame: {processingStats.frameCount}
-                    </div>
-                  </>
-                )}
-                
-                {!isStreaming && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Radio className="w-12 h-12 text-night-500 mx-auto mb-3" />
-                      <p className="text-night-400">Click "Start Conversion" to begin processing</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex gap-4 mt-6">
-                <button 
-                  onClick={toggleStream}
-                  className={`radar-button flex-1 ${!isStreaming ? 'bg-gradient-to-r from-radar-600 to-radar-700' : 'bg-gradient-to-r from-night-600 to-night-700'}`}
-                >
-                  {isStreaming ? (
-                    <>
-                      <Pause className="w-5 h-5 mr-2" />
-                      Pause Conversion
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-5 h-5 mr-2" />
-                      Start Conversion
-                    </>
-                  )}
-                </button>
-                <button 
-                  className="radar-button flex-1"
-                  disabled={!isStreaming}
-                >
-                  <Download className="w-5 h-5 mr-2" />
-                  Save Optical Output
-                </button>
-              </div>
+              )}
             </div>
           </div>
-          
-          <div className="space-y-6">
-            <div className="radar-card">
-              <h3 className="text-lg font-medium text-white mb-4">Conversion Statistics</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-night-400 mb-1">Frames Per Second</div>
-                  <div className="text-2xl font-bold text-radar-400">
-                    {isStreaming ? processingStats.fps : '-'}
-                    <span className="text-sm text-night-400 ml-1">FPS</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-night-400 mb-1">Conversion Time</div>
-                  <div className="text-2xl font-bold text-radar-400">
-                    {isStreaming ? processingStats.processingTime : '-'}
-                    <span className="text-sm text-night-400 ml-1">ms</span>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="text-sm text-night-400 mb-1">Total Frames Converted</div>
-                  <div className="text-2xl font-bold text-radar-400">
-                    {processingStats.frameCount}
-                  </div>
-                </div>
+
+          {/* Images Section - Compact */}
+          <div className="flex flex-col gap-4">
+            {/* SAR Image Card */}
+            <div className="radar-card p-4 flex flex-col h-[240px]">
+              <h2 className="text-xl font-semibold mb-2">🛰️ SAR Image</h2>
+              <div className="flex-1 flex items-center justify-center overflow-hidden">
+                {loading ? (
+                  <div className="text-yellow-300">⏳ Processing SAR image...</div>
+                ) : error ? (
+                  <div className="text-red-400">{error}</div>
+                ) : sarImageUrl ? (
+                  <img
+                    src={sarImageUrl}
+                    alt="SAR Output"
+                    className="max-h-[180px] max-w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-night-300">Select a location on the map</div>
+                )}
               </div>
             </div>
-            
-            <div className="radar-card">
-              <h3 className="text-lg font-medium text-white mb-4">Conversion Settings</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-night-400 block mb-2">Output Resolution</label>
-                  <select className="w-full bg-night-800 border border-night-600 rounded-md px-3 py-2 text-white">
-                    <option>1080p (1920x1080)</option>
-                    <option>720p (1280x720)</option>
-                    <option>480p (854x480)</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="text-sm text-night-400 block mb-2">Conversion Quality</label>
-                  <select className="w-full bg-night-800 border border-night-600 rounded-md px-3 py-2 text-white">
-                    <option>High (Slower)</option>
-                    <option selected>Balanced</option>
-                    <option>Fast (Lower quality)</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm text-night-400">Enable Detail Enhancement</label>
-                    <div className="w-10 h-5 bg-night-700 rounded-full relative">
-                      <div className="absolute left-1 top-1 w-3 h-3 bg-radar-500 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
+
+            {/* Convert Button - Moved between images */}
+            {sarImageUrl && (
+              <button className="bg-radar-500 hover:bg-radar-600 px-4 py-3 text-white rounded-lg text-sm w-full transition-colors">
+                Convert to Optical
+              </button>
+            )}
+
+            {/* Optical Image Card */}
+            <div className="radar-card p-4 flex flex-col h-[240px]">
+              <h2 className="text-xl font-semibold mb-2">🌄 Optical Image</h2>
+              <div className="flex-1 flex items-center justify-center overflow-hidden">
+                {sarImageUrl ? (
+                  <img
+                    src={sarImageUrl}
+                    alt="Optical Output"
+                    className="max-h-[180px] max-w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-night-300">SAR image will appear here first</div>
+                )}
               </div>
             </div>
           </div>

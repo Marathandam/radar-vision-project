@@ -9,6 +9,8 @@ import OptionSelection from "./pages/OptionSelection";
 import ImageUpload from "./pages/ImageUpload";
 import LiveFeed from "./pages/LiveFeed";
 import NotFound from "./pages/NotFound";
+import 'leaflet/dist/leaflet.css';
+
 
 const queryClient = new QueryClient();
 
