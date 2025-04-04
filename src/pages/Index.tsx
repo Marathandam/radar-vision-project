@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
   Radar, 
-  Cloud, 
+  Eye, 
   Image as ImageIcon, 
   Zap
 } from 'lucide-react';
@@ -16,23 +15,23 @@ const Index = () => {
   const features = [
     {
       icon: <ImageIcon className="w-8 h-8 text-radar-500" />,
-      title: "Optical to SAR Conversion",
-      description: "Transform standard optical images into detailed SAR representations with advanced algorithms."
+      title: "SAR to Optical Conversion",
+      description: "Transform complex SAR images into intuitive optical representations with our advanced algorithms."
     },
     {
-      icon: <Cloud className="w-8 h-8 text-radar-500" />,
-      title: "All-Weather Capabilities",
-      description: "SAR imaging works regardless of weather conditions, clouds, or darkness."
+      icon: <Eye className="w-8 h-8 text-radar-500" />,
+      title: "Enhanced Interpretability",
+      description: "Make SAR data accessible by converting it to familiar optical-like imagery."
     },
     {
       icon: <Radar className="w-8 h-8 text-radar-500" />,
       title: "Live Feed Processing",
-      description: "Process real-time data streams and convert them into SAR visualizations on the fly."
+      description: "Process real-time SAR data streams and convert them into optical visualizations."
     },
     {
       icon: <Zap className="w-8 h-8 text-radar-500" />,
       title: "Rapid Processing",
-      description: "High-performance algorithms deliver quick results without compromising quality."
+      description: "High-performance algorithms deliver quick conversions without compromising quality."
     }
   ];
 
@@ -42,10 +41,10 @@ const Index = () => {
         {/* Hero section */}
         <section className="w-full max-w-4xl mx-auto text-center mb-16 animate-fade-in">
           <h1 className="radar-title mb-4">
-            Synthetic Aperture Radar Image Generator
+            SAR to Optical Image Converter
           </h1>
           <p className="radar-subtitle max-w-2xl mx-auto">
-            Transforming optical imagery into powerful SAR representations for enhanced detection and analysis
+            Transforming synthetic aperture radar data into intuitive optical representations for enhanced analysis
           </p>
           
           <div className="relative w-full h-64 md:h-80 mt-12 mb-8 rounded-xl overflow-hidden">
@@ -94,12 +93,12 @@ const Index = () => {
           <div className="radar-card">
             <h2 className="radar-section-title">About the Project</h2>
             <p className="text-night-200 mb-4">
-              This project aims to create a web-based tool that can generate SAR images either from live feeds 
-              or uploaded optical images. SAR technology provides unique capabilities for remote sensing 
-              regardless of weather conditions or daylight.
+              This project provides tools to convert synthetic aperture radar (SAR) imagery into optical-like
+              representations, making complex radar data more accessible and interpretable for analysis.
             </p>
             <p className="text-night-200">
-              [More details about your project will go here as you complete them...]
+              SAR technology excels in all-weather conditions, and our conversion helps bridge the gap between
+              radar specialists and optical imagery analysts.
             </p>
           </div>
         </section>

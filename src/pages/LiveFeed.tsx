@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Pause, RefreshCw, Download, Radio } from 'lucide-react';
@@ -45,19 +44,19 @@ const LiveFeed = () => {
           </button>
         </div>
 
-        <h1 className="radar-title text-center">Live Feed SAR Generation</h1>
+        <h1 className="radar-title text-center">Live SAR to Optical Conversion</h1>
         <p className="text-center text-night-300 mb-12">
-          Process real-time data streams for continuous SAR image generation
+          Convert real-time SAR data streams into optical representations
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <div className="radar-card h-[500px] flex flex-col">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-white">Live Feed Visualization</h3>
+                <h3 className="text-lg font-medium text-white">Live Conversion Feed</h3>
                 <div className="flex items-center">
                   <span className={`w-3 h-3 rounded-full mr-2 ${isStreaming ? 'bg-green-500 animate-pulse' : 'bg-night-500'}`}></span>
-                  <span className="text-sm text-night-300">{isStreaming ? 'Stream active' : 'Stream inactive'}</span>
+                  <span className="text-sm text-night-300">{isStreaming ? 'Conversion active' : 'Conversion inactive'}</span>
                 </div>
               </div>
               
@@ -73,7 +72,7 @@ const LiveFeed = () => {
                       <div className="absolute w-1 h-32 bg-gradient-to-t from-radar-500 to-transparent origin-bottom animate-radar-scan"></div>
                     </div>
                     <div className="absolute bottom-4 left-4 text-xs text-night-400">
-                      Processing frame: {processingStats.frameCount}
+                      Converting frame: {processingStats.frameCount}
                     </div>
                   </>
                 )}
@@ -82,7 +81,7 @@ const LiveFeed = () => {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <Radio className="w-12 h-12 text-night-500 mx-auto mb-3" />
-                      <p className="text-night-400">Click "Start Stream" to begin processing</p>
+                      <p className="text-night-400">Click "Start Conversion" to begin processing</p>
                     </div>
                   </div>
                 )}
@@ -96,12 +95,12 @@ const LiveFeed = () => {
                   {isStreaming ? (
                     <>
                       <Pause className="w-5 h-5 mr-2" />
-                      Pause Stream
+                      Pause Conversion
                     </>
                   ) : (
                     <>
                       <Play className="w-5 h-5 mr-2" />
-                      Start Stream
+                      Start Conversion
                     </>
                   )}
                 </button>
@@ -110,7 +109,7 @@ const LiveFeed = () => {
                   disabled={!isStreaming}
                 >
                   <Download className="w-5 h-5 mr-2" />
-                  Save Current Frame
+                  Save Optical Output
                 </button>
               </div>
             </div>
@@ -118,7 +117,7 @@ const LiveFeed = () => {
           
           <div className="space-y-6">
             <div className="radar-card">
-              <h3 className="text-lg font-medium text-white mb-4">Processing Statistics</h3>
+              <h3 className="text-lg font-medium text-white mb-4">Conversion Statistics</h3>
               <div className="space-y-4">
                 <div>
                   <div className="text-sm text-night-400 mb-1">Frames Per Second</div>
@@ -129,7 +128,7 @@ const LiveFeed = () => {
                 </div>
                 
                 <div>
-                  <div className="text-sm text-night-400 mb-1">Processing Time</div>
+                  <div className="text-sm text-night-400 mb-1">Conversion Time</div>
                   <div className="text-2xl font-bold text-radar-400">
                     {isStreaming ? processingStats.processingTime : '-'}
                     <span className="text-sm text-night-400 ml-1">ms</span>
@@ -137,7 +136,7 @@ const LiveFeed = () => {
                 </div>
                 
                 <div>
-                  <div className="text-sm text-night-400 mb-1">Total Frames Processed</div>
+                  <div className="text-sm text-night-400 mb-1">Total Frames Converted</div>
                   <div className="text-2xl font-bold text-radar-400">
                     {processingStats.frameCount}
                   </div>
@@ -146,10 +145,10 @@ const LiveFeed = () => {
             </div>
             
             <div className="radar-card">
-              <h3 className="text-lg font-medium text-white mb-4">Stream Settings</h3>
+              <h3 className="text-lg font-medium text-white mb-4">Conversion Settings</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm text-night-400 block mb-2">Resolution</label>
+                  <label className="text-sm text-night-400 block mb-2">Output Resolution</label>
                   <select className="w-full bg-night-800 border border-night-600 rounded-md px-3 py-2 text-white">
                     <option>1080p (1920x1080)</option>
                     <option>720p (1280x720)</option>
@@ -158,7 +157,7 @@ const LiveFeed = () => {
                 </div>
                 
                 <div>
-                  <label className="text-sm text-night-400 block mb-2">Processing Quality</label>
+                  <label className="text-sm text-night-400 block mb-2">Conversion Quality</label>
                   <select className="w-full bg-night-800 border border-night-600 rounded-md px-3 py-2 text-white">
                     <option>High (Slower)</option>
                     <option selected>Balanced</option>
@@ -168,7 +167,7 @@ const LiveFeed = () => {
                 
                 <div>
                   <div className="flex justify-between mb-2">
-                    <label className="text-sm text-night-400">Enable Enhancement</label>
+                    <label className="text-sm text-night-400">Enable Detail Enhancement</label>
                     <div className="w-10 h-5 bg-night-700 rounded-full relative">
                       <div className="absolute left-1 top-1 w-3 h-3 bg-radar-500 rounded-full"></div>
                     </div>
